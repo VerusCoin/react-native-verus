@@ -954,11 +954,12 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         moduleScope.launch {
             try {
                 val seedBytes = seed?.let{ SeedPhrase.new(seed).toByteArray() }
+                val spendingKeyBytes = spendingKey?.let{ SeedPhrase.new(spendingKey).toByteArray() }
 
                 // TODO: (Biz) check that we error on all invalid conditions (i.e. seed & extsk provided simultaneously, also verify lengths)
                 val channelKeys = DerivationTool.getInstance().getVerusEncryptionAddress(
                     seed = seedBytes,
-                    spendingKey = spendingKey,
+                    spendingKey = spendingKeyBytes,
                     fromId = fromId,
                     toId = toId,
                     hdIndex = hdIndex,
