@@ -953,15 +953,19 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     ) {
         moduleScope.launch {
             try {
+                // We handle all secret values' byte conversion using SeedPhrase.new()
                 val seedBytes = seed?.let{ SeedPhrase.new(seed).toByteArray() }
                 val spendingKeyBytes = spendingKey?.let{ SeedPhrase.new(spendingKey).toByteArray() }
 
-                // TODO: (Biz) check that we error on all invalid conditions (i.e. seed & extsk provided simultaneously, also verify lengths)
+                // use Hex.decode for non-secret values
+                val fromIdBytes = fromId?.let{ Hex.decode(it) }
+                val toIdBytes = toId?.let{ Hex.decode(it) }
+
                 val channelKeys = DerivationTool.getInstance().getVerusEncryptionAddress(
                     seed = seedBytes,
                     spendingKey = spendingKeyBytes,
-                    fromId = fromId,
-                    toId = toId,
+                    fromId = fromIdBytes,
+                    toId = toIdBytes,
                     hdIndex = hdIndex,
                     encryptionIndex = encryptionIndex,
                     returnSecret = returnSecret
