@@ -1098,17 +1098,37 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
        return bytes
     }
 
+    private fun encodeSaplingSpendingKey(data: ByteArray): String {
+        val hrp = "secret-extended-key-main"
+
+        require(data.size == 169) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+       val spendingKey = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+       return spendingKey
+    }
+
+    private fun encodeSaplingDFVK(data: ByteArray): String {
+        val hrp = "zxviews"
+
+        require(data.size == 169) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+       val dfvk = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+       return dfvk
+    }
+
     /**
     * Converts a ChannelKeys data class into a WritableMap for React Native.
     */
     private fun ChannelKeys.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
         map.putString("address", this.address)
-        map.putString("fvk", this.fvk)
-        map.putString("fvkHex", this.fvkHex)
-        map.putString("dfvkHex", this.dfvkHex)
-        this.ivk?.let { map.putString("ivk", it) }
-        this.spendingKey?.let { map.putString("spendingKey", it) }
+        map.putString("dfvk", encodeSaplingDFVK(this.dfvkBytes))
+        this.ivk?.let { map.putString("ivk", Hex.encode(it)) }
+        this.spendingKey?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
         return map
     }
 
@@ -1129,6 +1149,11 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
             return hex.chunked(2)
                 .map { it.toInt(16).toByte() }
                 .toByteArray()
+        }
+        fun encode(bytes: ByteArray): String {
+            return bytes.joinToString(separator = "") { byte ->
+                "%02x".format(byte)
+            }
         }
     }
 }

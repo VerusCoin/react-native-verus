@@ -126,23 +126,12 @@ export interface PrivateTransactionsResponse {
 }
 
 
-export interface ChannelKeys{
-
-    /** The public Sapling z-address for this channel (bech32 format). */
+export interface ChannelKeysResponse{
     address: string
-
-    /** The bech32-encoded Extended Full Viewing Key. */
-    fvk: string
-
-    /** The hex-encoded Extended Full Viewing Key (169 bytes). */
-    fvkHex: string
-
-    /** 🔑 The hex-encoded Diversifiable Full Viewing Key (128 bytes). This is required for decryption. */
-    dfvkHex: string
-
+    /* bech32 representation */
+    dfvk: string
     /** The hex-encoded Incoming Viewing Key. */
     ivk?: string
-
     /** The optional bech32-encoded spending key. */
     spendingKey?: string
 }

@@ -20,7 +20,7 @@ import {
   SynchronizerCallbacks,
   Transaction,
   UnifiedViewingKey,
-  ChannelKeys,
+  ChannelKeysResponse,
   EncryptedPayload
 } from './types'
 export * from './types'
@@ -116,7 +116,7 @@ export const Tools = {
     hdIndex: number = -1,
     encryptionIndex: number = 0,
     returnSecret: boolean = false
-  ): Promise<ChannelKeys> {
+  ): Promise<ChannelKeysResponse> {
     return VerusLightClient.zGetEncryptionAddress(
       seed,
       spendingKey,
