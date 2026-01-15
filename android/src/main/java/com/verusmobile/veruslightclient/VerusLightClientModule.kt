@@ -1127,8 +1127,8 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         val map = Arguments.createMap()
         map.putString("address", this.address)
         map.putString("dfvk", encodeSaplingDFVK(this.dfvkBytes))
-        this.ivk?.let { map.putString("ivk", Hex.encode(it)) }
-        this.spendingKey?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
+        this.ivkBytes?.let { map.putString("ivk", Hex.encode(it)) }
+        this.spendingKeyBytes?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
         return map
     }
 
