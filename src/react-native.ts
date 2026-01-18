@@ -110,7 +110,15 @@ export const Tools = {
    * @returns {Promise<{address: string, fullViewingKey: string, spendingKey?: string}>} A promise that resolves with a ChannelKeys object.
    */
   async getVerusEncryptionAddress(params: ChannelKeysRequest): Promise<ChannelKeysResponse> {
-    return VerusLightClient.zGetEncryptionAddress(params);
+      return VerusLightClient.zGetEncryptionAddress(
+      params.mnemonicSeed ?? null,
+      params.extsk ?? null,
+      params.fromId ?? null,
+      params.toId ?? null,
+      params.hdIndex ?? -1,
+      params.encryptionIndex ?? 0,
+      params.returnSecret ?? false
+    );
   },
 
   /**
