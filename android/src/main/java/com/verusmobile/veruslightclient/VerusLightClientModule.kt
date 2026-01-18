@@ -951,6 +951,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         returnSecret: Boolean,
         promise: Promise
     ) {
+        Log.w("ReactNative", "seed argument=$seed, spendingKey argument=$spendingKey")
         moduleScope.launch {
             try {
                 // We handle all secret values' byte conversion using SeedPhrase.new()

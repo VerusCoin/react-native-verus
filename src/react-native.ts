@@ -109,18 +109,22 @@ export const Tools = {
    * @param {boolean} returnSecret If true, the derived extended spending key will be included in the result. Defaults to false.
    * @returns {Promise<{address: string, fullViewingKey: string, spendingKey?: string}>} A promise that resolves with a ChannelKeys object.
    */
-  async getVerusEncryptionAddress(params: ChannelKeysRequest): Promise<ChannelKeysResponse> {
-      return VerusLightClient.zGetEncryptionAddress(
+  async getVerusEncryptionAddress(
+    params: ChannelKeysRequest
+  ): Promise<ChannelKeysResponse> {
+    console.warn("params.mnemonicSeed =", params.mnemonicSeed);
+    console.warn("params.extsk =", params.extsk);
+
+    return VerusLightClient.zGetEncryptionAddress(
       params.mnemonicSeed ?? null,
       params.extsk ?? null,
       params.fromId ?? null,
       params.toId ?? null,
       params.hdIndex ?? -1,
       params.encryptionIndex ?? 0,
-      params.returnSecret ?? false
+      params.returnSecret ?? false,
     );
   },
-
   /**
    * Encrypts a message for a given z-address.
    * @param {string} address The recipient's z-address.
