@@ -20,6 +20,7 @@ import {
   SynchronizerCallbacks,
   Transaction,
   UnifiedViewingKey,
+  ChannelKeysRequest,
   ChannelKeysResponse,
   EncryptedPayload
 } from './types'
@@ -108,24 +109,8 @@ export const Tools = {
    * @param {boolean} returnSecret If true, the derived extended spending key will be included in the result. Defaults to false.
    * @returns {Promise<{address: string, fullViewingKey: string, spendingKey?: string}>} A promise that resolves with a ChannelKeys object.
    */
-  async getVerusEncryptionAddress(
-    seed: string | null,
-    spendingKey: string | null,
-    fromId: string | null,
-    toId: string | null,
-    hdIndex: number = -1,
-    encryptionIndex: number = 0,
-    returnSecret: boolean = false
-  ): Promise<ChannelKeysResponse> {
-    return VerusLightClient.zGetEncryptionAddress(
-      seed,
-      spendingKey,
-      fromId,
-      toId,
-      hdIndex,
-      encryptionIndex,
-      returnSecret
-    );
+  async getVerusEncryptionAddress(params: ChannelKeysRequest): Promise<ChannelKeysResponse> {
+    return VerusLightClient.zGetEncryptionAddress(params);
   },
 
   /**

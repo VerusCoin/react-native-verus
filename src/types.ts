@@ -125,6 +125,15 @@ export interface PrivateTransactionsResponse {
   transactions: Transaction[]
 }
 
+export interface ChannelKeysRequest {
+  mnemonicSeed?: string
+  extsk?: string
+  fromId?: string
+  toId?: string
+  hdIndex?: number
+  encryptionIndex?: number
+  returnSecret?: boolean
+}
 
 export interface ChannelKeysResponse{
     address: string
@@ -137,7 +146,6 @@ export interface ChannelKeysResponse{
     /** The optional bech32-encoded spending key. */
     spendingKey?: string
 }
-
 
 export interface EncryptedPayload {
   
