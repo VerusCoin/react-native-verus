@@ -1110,7 +1110,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
        return spendingKey
     }
 
-    private fun encodeSaplingDFVK(data: ByteArray): String {
+    private fun encodeSaplingExtendedFvk(data: ByteArray): String {
         val hrp = "zxviews"
 
         require(data.size == 169) {
@@ -1127,8 +1127,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     private fun ChannelKeys.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
         map.putString("address", this.address)
-        map.putString("fvk", encodeSaplingDFVK(this.fvkBytes))
-        map.putString("dfvkHex", Hex.encode(this.dfvkBytes))
+        map.putString("fvk", encodeSaplingExtendedFvk(this.fvkBytes))
         map.putString("ivk", Hex.encode(this.ivkBytes))
         this.spendingKeyBytes?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
         return map

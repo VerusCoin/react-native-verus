@@ -139,8 +139,6 @@ export interface ChannelKeysResponse{
     address: string
     /* extended fvk with diversifer info included, bech32 representation */
     fvk: string
-    /* 128 byte hex dfvk, no extended info */
-    dfvkHex: string, 
     /** The hex-encoded Incoming Viewing Key. */
     ivk: string
     /** The optional bech32-encoded spending key. */
