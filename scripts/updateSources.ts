@@ -26,15 +26,13 @@ function downloadSources(): void {
     'ZcashLightClientKit',
     'https://github.com/VerusCoin/verus-swift-wallet-sdk.git',
     // 2.0.3:
-    // below can, and should be changed to a precise commit before prod
-    'master'
+    '8c0fc76c354913df8b0358c6e3e51c9b400b641f'
   )
   getRepo(
     'zcash-light-client-ffi',
     'https://github.com/VerusCoin/verus-lightclient-ffi.git',
     // 0.4.0:
-    // below can, and should be changed to a precise commit before prod
-    'master'
+    '88757dfe50c72bf195235dbfe2e2c9dca034dc87'
   )
 }
 
