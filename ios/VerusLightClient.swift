@@ -535,6 +535,79 @@ class VerusLightClient: RCTEventEmitter {
     return viewingKey
   }
 
+  private func zGetEncryptionAddress(_ mnemonicSeed: String?, _ extsk: String?, _ fromId: String?,
+    _ toId: String?,  _ hdIndex: Int, _ encryptionIndex: Int, _ returnSecret: Bool ) throws -> ChannelKeys
+  {
+    let seedBytes: [UInt8]? =
+        try mnemonicSeed.map { seed in
+            try Mnemonic.deterministicSeedBytes(from: seed)
+        }
+    let extskBytes: [UInt8]? = try extsk.map { hex in try bytes(from: hex) }
+
+    let fromIdBytes: [UInt8]? = try fromId.map { hex in try bytes(from: hex) }
+    let toIdBytes: [UInt8]? = try toId.map { hex in try bytes(from: hex) }
+
+    // mainnet is always fine here, irrelevant for Verus
+    let derivationTool = DerivationTool(networkType: .mainnet)
+
+    let channelKeys = try derivationTool.zGetEncryptionAddress(
+        seed: seedBytes,
+        extsk: extskBytes,
+        hdIndex: hdIndex,
+        encryptionIndex: encryptionIndex,
+        fromId: fromIdBytes,
+        toId: toIdBytes,
+        returnSecret: returnSecret
+    )
+    return channelKeys
+  }
+
+  @objc func zGetEncryptionAddress(_ mnemonicSeed: String?, _ extsk: String?, _ fromId: String?, _ toId: String?,
+    _ hdIndex: NSNumber, _ encryptionIndex: NSNumber, _ returnSecret: Bool, resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        // TS 'number' to Swift Int needs narrowing check too
+        guard let hdIndexInt = Int(exactly: hdIndex) else {
+          // throw error
+          //TODO: figure out how to deal with errors here
+        }
+        guard let encryptionIndexInt = Int(exactly: encryptionIndex) else {
+          //throw error
+        }
+
+        let channelKeys = try zGetEncryptionAddress(
+            mnemonicSeed,
+            extsk,
+            fromId,
+            toId,
+            hdIndexInt,
+            encryptionIndexInt,
+            returnSecret
+        )
+
+        //TODO: move this outside of function for re-use across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
+
+        //TODO: fvk and spendingKey should be Bech32 encoded prior to return here
+        var result: [String: Any] = [
+            "address": channelKeys.address,
+            "fvk": hexEncode(channelKeys.fullViewingKey),
+            "ivk": hexEncode(channelKeys.incomingViewingKey)
+        ]
+
+        if let sk = channelKeys.spendingKey {
+            result["spendingKey"] = hexEncode(sk)
+        }
+
+        resolve(result)
+    } catch {
+        reject("ZGetEncryptionAddressError", "Failed to derive encryption address", error)
+    }
+  }
+
   @objc func deriveViewingKey(
     _ extsk: String, _ seed: String, _ network: String, resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock

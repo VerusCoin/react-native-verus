@@ -60,6 +60,16 @@ typedef struct FFIEncodedKey {
   char *encoding;
 } FFIEncodedKey;
 
+typedef struct FFIChannelKeys {
+  char *address;
+  uint8_t *full_viewing_key_ptr;
+  uintptr_t full_viewing_key_len;
+  uint8_t *incoming_viewing_key_ptr;
+  uintptr_t incoming_viewing_key_len;
+  uint8_t *spending_key_ptr;  // optional; may be null
+  uintptr_t spending_key_len; // 0 when spending key null
+} FFIChannelKeys;
+
 /**
  * A struct that contains a pointer to, and length information for, a heap-allocated
  * slice of [`FFIEncodedKey`] values.
@@ -397,6 +407,8 @@ struct FfiAccounts *zcashlc_list_accounts(const uint8_t *db_data,
  */
 void zcashlc_free_binary_key(struct FFIBinaryKey *ptr);
 
+void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr);
+
 /**
  * Adds the next available account-level spend authority, given the current set of [ZIP 316]
  * account identifiers known, to the wallet database.
@@ -496,6 +508,19 @@ struct FFIBinaryKey *zcashlc_derive_spending_key(const uint8_t *transparent_key,
                                                  uintptr_t seed_len,
                                                  int32_t account,
                                                  uint32_t network_id);
+
+struct FFIChannelKeys *zcashlc_z_get_encryption_address(const uint8_t *seed,
+                                                        uintptr_t seed_len,
+                                                        const uint8_t *extsk,
+                                                        uintptr_t extsk_len,
+                                                        int32_t hd_index,
+                                                        int32_t encryption_index,
+                                                        const uint8_t *from_id,
+                                                        uintptr_t from_id_len,
+                                                        const uint8_t *to_id,
+                                                        uintptr_t to_id_len,
+                                                        bool return_secret
+);
 
 /**
  * Obtains the unified full viewing key for the given binary-encoded unified spending key
