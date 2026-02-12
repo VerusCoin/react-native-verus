@@ -535,6 +535,22 @@ class VerusLightClient: RCTEventEmitter {
     return viewingKey
   }
 
+  private func encodeSaplingSpendingKey(_ data: [UInt8]) throws -> String {
+    let hrp = "secret-extended-key-main"
+    guard data.count == 169 else {
+      throw Bech32EncodingError.invalidDataLength
+    }
+    return try Bech32.encode(hrp: hrp, data: data)
+  }
+
+  private func encodeSaplingExtendedFvk(_ data: [UInt8]) throws -> String {
+    let hrp = "zxviews"
+    guard data.count == 169 else {
+        throw Bech32EncodingError.invalidDataLength
+    }
+    return try Bech32.encode(hrp: hrp, data: data)
+  }
+
   private func zGetEncryptionAddress(_ mnemonicSeed: String?, _ extsk: String?, _ fromId: String?,
     _ toId: String?,  _ hdIndex: Int, _ encryptionIndex: Int, _ returnSecret: Bool ) throws -> ChannelKeys
   {
@@ -586,7 +602,7 @@ class VerusLightClient: RCTEventEmitter {
             returnSecret
         )
 
-        //TODO: move this outside of function for re-use across file
+        //TODO: move this outside of function for reuse across file
         func hexEncode(_ bytes: [UInt8]) -> String {
             bytes.map { String(format: "%02x", $0) }.joined()
         }
@@ -594,12 +610,12 @@ class VerusLightClient: RCTEventEmitter {
         //TODO: fvk and spendingKey should be Bech32 encoded prior to return here
         var result: [String: Any] = [
             "address": channelKeys.address,
-            "fvk": hexEncode(channelKeys.fullViewingKey),
+            "fvk": encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
             "ivk": hexEncode(channelKeys.incomingViewingKey)
         ]
 
         if let sk = channelKeys.spendingKey {
-            result["spendingKey"] = hexEncode(sk)
+            result["spendingKey"] = encodeSaplingSpendingKey(sk)
         }
 
         resolve(result)
