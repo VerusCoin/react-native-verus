@@ -585,11 +585,11 @@ class VerusLightClient: RCTEventEmitter {
     do {
         // TS 'number' to Swift Int needs narrowing check too
         guard let hdIndexInt = Int(exactly: hdIndex) else {
-          // throw error
+            throw ZcashError.derivationToolEncryptionAddressInvalidIndex
           //TODO: figure out how to deal with errors here
         }
         guard let encryptionIndexInt = Int(exactly: encryptionIndex) else {
-          //throw error
+            throw ZcashError.derivationToolEncryptionAddressInvalidIndex
         }
 
         let channelKeys = try zGetEncryptionAddress(
@@ -610,12 +610,12 @@ class VerusLightClient: RCTEventEmitter {
         //TODO: fvk and spendingKey should be Bech32 encoded prior to return here
         var result: [String: Any] = [
             "address": channelKeys.address,
-            "fvk": encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
+            "fvk": try encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
             "ivk": hexEncode(channelKeys.incomingViewingKey)
         ]
 
         if let sk = channelKeys.spendingKey {
-            result["spendingKey"] = encodeSaplingSpendingKey(sk)
+            result["spendingKey"] = try encodeSaplingSpendingKey(sk)
         }
 
         resolve(result)
