@@ -988,7 +988,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     ) {
         moduleScope.launch {
             try {
-                val payload = DerivationTool.getInstance().encryptVerusMessage(address, message, returnSsk)
+                val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(message), returnSsk)
                 // We must convert the result to a WritableMap for JavaScript
                 promise.resolve(payload.toWritableMap())
             } catch (e: Throwable) {
@@ -1006,8 +1006,13 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         promise: Promise
     ) {
         moduleScope.launch {
+            val fvkBytes = fvkHex?.let{ Hex.decode(fvkHex) }
+            val epkBytes = epkHex?.let{ Hex.decode(epkHex) }
+            val sskBytes = sskHex?.let{ Hex.decode(sskHex) }
+
+
             try {
-                val decryptedMessage = DerivationTool.getInstance().decryptVerusMessage(fvkHex, epkHex, ciphertextHex, sskHex)
+                val decryptedMessage = DerivationTool.getInstance().decryptVerusData(fvkBytes, epkBytes, Hex.decode(ciphertextHex), sskBytes)
                 promise.resolve(decryptedMessage)
             } catch (e: Throwable) {
                 promise.reject("DECRYPT_MESSAGE_FAILED", e.message ?: "Failed to decrypt message", e)
@@ -1121,12 +1126,37 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
        return dfvk
     }
 
+    private fun decodeSaplingAddress(bech32Address: String): ByteArray {
+        val (hrp, data, encoding) = Bech32.decode(bech32Address)
+        require(hrp == "zs"/* || hrp == "secret-extended-key-test"*/) {
+            throw Exception("Invalid HRP: $hrp")
+        }
+        val bytes = Bech32.five2eight(data, offset = 0)
+        require(bytes.size == 43) {
+            throw Exception("Unexpected decoded key length: ${bytes.size} bytes")
+        }
+        return bytes
+    }
+
+    private fun encodeSaplingAddress(data: ByteArray): String {
+        val hrp = "zs"
+
+        require(data.size == 43) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+        val address = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+        return address
+    }
+
+
+
     /**
     * Converts a ChannelKeys data class into a WritableMap for React Native.
     */
     private fun ChannelKeys.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
-        map.putString("address", this.address)
+        map.putString("address", encodeSaplingAddress(this.copyAddress()))
         map.putString("fvk", encodeSaplingExtendedFvk(this.copyExtendedFullViewingKeyBytes()))
         map.putString("ivk", Hex.encode(this.copyInternalViewingKeyBytes()))
         this.copySpendingKeyBytes()?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
@@ -1138,9 +1168,9 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     */
     private fun EncryptedPayload.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
-        map.putString("ephemeralPublicKey", this.ephemeralPublicKey)
-        map.putString("ciphertext", this.ciphertext)
-        this.symmetricKey?.let { map.putString("symmetricKey", it) }
+        map.putString("ephemeralPublicKey", Hex.encode(this.ephemeralPublicKey))
+        map.putString("ciphertext", Hex.encode(this.encrypted_data))
+        this.symmetricKey?.let { map.putString("symmetricKey", Hex.encode(it)) }
         return map
     }
 
