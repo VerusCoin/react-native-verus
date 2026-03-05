@@ -1000,7 +1000,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun decryptVerusData(
-        fvkHex: String?,
+        ivkHex: String?,
         epkHex: String?,
         dataToDecrypt: String,
         sskHex: String?,
