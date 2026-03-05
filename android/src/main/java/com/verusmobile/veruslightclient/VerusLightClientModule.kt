@@ -1014,7 +1014,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
 
             try {
                 val decryptedMessage = DerivationTool.getInstance().decryptVerusData(fvkBytes, epkBytes, Hex.decode(ciphertextHex), sskBytes)
-                promise.resolve(decryptedMessage)
+                promise.resolve(Hex.encode(decryptedMessage))
             } catch (e: Throwable) {
                 promise.reject("DECRYPT_MESSAGE_FAILED", e.message ?: "Failed to decrypt message", e)
             }
