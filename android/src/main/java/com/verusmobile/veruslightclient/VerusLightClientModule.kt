@@ -988,6 +988,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     ) {
         moduleScope.launch {
             try {
+                Log.w("ReactNative", ">>>> encryptVerusMessage entered in Kotlin");
                 val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(message), returnSsk)
                 // We must convert the result to a WritableMap for JavaScript
                 promise.resolve(payload.toWritableMap())

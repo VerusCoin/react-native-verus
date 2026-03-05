@@ -137,6 +137,7 @@ export const Tools = {
     message: string,
     returnSsk: boolean = false
   ): Promise<EncryptedPayload> {
+    console.warn("encryptVerusMessage in typescript entered!");
     return VerusLightClient.encryptVerusMessage(address, message, returnSsk);
   },
 
