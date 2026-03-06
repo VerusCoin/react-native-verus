@@ -988,12 +988,12 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     ) {
         moduleScope.launch {
             try {
-                Log.w("ReactNative", ">>>> encryptVerusMessage entered in Kotlin");
+                Log.w("ReactNative", ">>>> encryptVerusData entered in Kotlin");
                 val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(dataToEncrypt), returnSsk)
                 // We must convert the result to a WritableMap for JavaScript
                 promise.resolve(payload.toWritableMap())
             } catch (e: Throwable) {
-                promise.reject("ENCRYPT_MESSAGE_FAILED", e.message ?: "Failed to encrypt message", e)
+                promise.reject("ENCRYPT_DATA_FAILED", e.message ?: "Failed to encrypt message", e)
             }
         }
     }
@@ -1007,16 +1007,16 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         promise: Promise
     ) {
         moduleScope.launch {
-            val fvkBytes = fvkHex?.let{ Hex.decode(fvkHex) }
+            val ivkBytes = ivkHex?.let{ Hex.decode(ivkHex) }
             val epkBytes = epkHex?.let{ Hex.decode(epkHex) }
             val sskBytes = sskHex?.let{ Hex.decode(sskHex) }
 
 
             try {
-                val decrypyedData = DerivationTool.getInstance().decryptVerusData(fvkBytes, epkBytes, Hex.decode(dataToDecrypt), sskBytes)
-                promise.resolve(Hex.encode(decryptedMessage))
+                val decrypytedData = DerivationTool.getInstance().decryptVerusData(ivkBytes, epkBytes, Hex.decode(dataToDecrypt), sskBytes)
+                promise.resolve(Hex.encode(decryptedData))
             } catch (e: Throwable) {
-                promise.reject("DECRYPT_MESSAGE_FAILED", e.message ?: "Failed to decrypt message", e)
+                promise.reject("DECRYPT_DATA_FAILED", e.message ?: "Failed to decrypt data", e)
             }
         }
     }

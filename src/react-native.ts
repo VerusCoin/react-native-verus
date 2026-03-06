@@ -137,7 +137,7 @@ export const Tools = {
     dataToEncrypt: string,
     returnSsk: boolean = false
   ): Promise<EncryptedPayload> {
-    console.warn("encryptVerusMessage in typescript entered!");
+    console.warn("encryptVerusData in typescript entered!");
     return VerusLightClient.encryptVerusData(address, dataToEncrypt, returnSsk);
   },
 
@@ -149,14 +149,14 @@ export const Tools = {
    * @param {string | null} sskHex The hex-encoded symmetric session key. If provided, fvkHex and epkHex are ignored.
    * @returns {Promise<string>} A promise that resolves with the decrypted plaintext message.
    */
-   async decryptVerusMessage(
-    fvkHex: string | null,
+   async decryptVerusData(
+    ivkHex: string | null,
     epkHex: string | null,
     encryptedData: string,
     sskHex: string | null
   ): Promise<string> {
-    return VerusLightClient.decryptVerusMessage(
-      fvkHex,
+    return VerusLightClient.decryptVerusData(
+      ivkHex,
       epkHex,
       encryptedData,
       sskHex
