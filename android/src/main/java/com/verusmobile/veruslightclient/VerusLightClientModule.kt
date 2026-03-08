@@ -1169,9 +1169,9 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     */
     private fun EncryptedPayload.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
-        map.putString("ephemeralPublicKey", Hex.encode(this.ephemeralPublicKey))
-        map.putString("ciphertext", Hex.encode(this.encrypted_data))
-        this.symmetricKey?.let { map.putString("symmetricKey", Hex.encode(it)) }
+        map.putString("ephemeralPublicKey", Hex.encode(this.copyEphemeralPublicKeyBytes()))
+        map.putString("ciphertext", Hex.encode(this.copyEncryptedDataBytes()))
+        this.copySymmetricKeyBytes()?.let { map.putString("symmetricKey", Hex.encode(it)) }
         return map
     }
 
