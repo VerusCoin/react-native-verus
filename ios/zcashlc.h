@@ -70,6 +70,17 @@ typedef struct FFIChannelKeys {
   uintptr_t spending_key_len; // 0 when spending key null
 } FFIChannelKeys;
 
+typedef struct FFIEncryptedPayload {
+  uint8_t *ephemeral_public_key_ptr;
+  uintptr_t ephemeral_public_key_len;
+
+  uint8_t *encrypted_data_ptr;
+  uint32_t encrypted_data_len;
+
+  uint8_t *symmetric_key_ptr;   // optional; may be null
+  uintptr_t symmetric_key_len;  // 0 when symmetric key null
+} FFIEncryptedPayload;
+
 /**
  * A struct that contains a pointer to, and length information for, a heap-allocated
  * slice of [`FFIEncodedKey`] values.
@@ -409,6 +420,8 @@ void zcashlc_free_binary_key(struct FFIBinaryKey *ptr);
 
 void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr);
 
+void zcashlc_free_encrypted_payload(struct FFIEncryptedPayload *payload);
+
 /**
  * Adds the next available account-level spend authority, given the current set of [ZIP 316]
  * account identifiers known, to the wallet database.
@@ -520,6 +533,13 @@ struct FFIChannelKeys *zcashlc_z_get_encryption_address(const uint8_t *seed,
                                                         const uint8_t *to_id,
                                                         uintptr_t to_id_len,
                                                         bool return_secret
+);
+
+struct FFIEncryptedPayload *zcashlc_encrypt_vdata(const uint8_t *address,
+                                                  uintptr_t address_len,
+                                                  const uint8_t *data,
+                                                  uint32_t data_len,
+                                                  bool return_ssk
 );
 
 /**
