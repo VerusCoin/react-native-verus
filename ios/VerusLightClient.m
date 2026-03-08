@@ -102,7 +102,7 @@ rejecter:(RCTPromiseRejectBlock)reject
 )
 
 RCT_EXTERN_METHOD(deriveSaplingSpendingKey:(NSString *)seed
-:(NSString *)network
+0:(NSString *)network
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
@@ -116,6 +116,21 @@ RCT_EXTERN_METHOD(zGetEncryptionAddress:(NSString * _Nullable)mnemonicSeed
 :(NSNumber * _Nonnull)hdIndex
 :(NSNumber * _Nonnull)encryptionIndex
 :(BOOL)returnSecret
+resolver:(RCTPromiseResolveBlock)resolve
+rejecter:(RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(encryptVerusMessage:(NSString *)address
+:(NSString *)message
+:(BOOL)returnSsk
+resolver:(RCTPromiseResolveBlock)resolve
+rejecter:(RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(decryptVerusMessage:(NSString * _Nullable)fvkHex
+:(NSString * _Nullable)epkHex
+:(NSString *)ciphertextHex
+:(NSString * _Nullable)sskHex
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )

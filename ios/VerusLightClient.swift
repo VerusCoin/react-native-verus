@@ -535,6 +535,16 @@ class VerusLightClient: RCTEventEmitter {
     return viewingKey
   }
 
+  private func decodeSaplingAddress(_ saplingAddress: String) throws -> [UInt8] {
+    let (hrp, data) = try Bech32.decode(saplingAddress)
+    //TODO: check hrp == 'zs'
+    guard data.count == 43 else {
+      throw Bech32EncodingError.invalidDataLength
+    }
+    let hex = data.map { String(format: "%02x", $0) }.joined()
+    resolve(hex)
+  }
+
   private func encodeSaplingSpendingKey(_ data: [UInt8]) throws -> String {
     let hrp = "secret-extended-key-main"
     guard data.count == 169 else {
@@ -621,6 +631,38 @@ class VerusLightClient: RCTEventEmitter {
         resolve(result)
     } catch {
         reject("ZGetEncryptionAddressError", "Failed to derive encryption address", error)
+    }
+  }
+
+  @objc func encryptVerusMessage(_ address: String, _ message: String, _ returnSsk: Bool, 
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        let address_bytes = decodeSaplingAddress(address)
+        let data_bytes = bytes(message)
+
+        // mainnet is always fine here, irrelevant for Verus
+        let derivationTool = DerivationTool(networkType: .mainnet)
+
+        let encryptedPayload = try derivationTool.encryptVerusMessage(
+            address: address_bytes,
+            data_to_encrypt: data_bytes,
+            returnSsk: returnSsk
+        )
+
+        var result: [String: Any] = [
+            "ephemeralPublicKey": encryptedPayload.ephemeralPublicKey,
+            "ciphertext": encryptedPayload.ciphertext,
+        ]
+
+        if let ssk = encryptedPayload.symmetricKey {
+            result["symmetricKey"] = ssk
+        }
+
+        resolve(result)
+    } catch {
+        reject("encryptVerusMessage", "Failed to encrypt data", error)
     }
   }
 
