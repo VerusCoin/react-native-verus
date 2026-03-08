@@ -639,21 +639,21 @@ class VerusLightClient: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     do {
-        let address_bytes = decodeSaplingAddress(address)
-        let data_bytes = bytes(message)
+        let address_bytes = try decodeSaplingAddress(address)
+        let data_bytes = try bytes(from: message)
 
         // mainnet is always fine here, irrelevant for Verus
         let derivationTool = DerivationTool(networkType: .mainnet)
 
-        let encryptedPayload = try derivationTool.encryptVerusMessage(
+        let encryptedPayload = try derivationTool.encryptVerusData(
             address: address_bytes,
-            data_to_encrypt: data_bytes,
+            dataToEncrypt: data_bytes,
             returnSsk: returnSsk
         )
 
         var result: [String: Any] = [
             "ephemeralPublicKey": encryptedPayload.ephemeralPublicKey,
-            "ciphertext": encryptedPayload.ciphertext,
+            "ciphertext": encryptedPayload.encryptedData,
         ]
 
         if let ssk = encryptedPayload.symmetricKey {
