@@ -651,13 +651,18 @@ class VerusLightClient: RCTEventEmitter {
             returnSsk: returnSsk
         )
 
+        //TODO: move this outside of function for reuse across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
+        
         var result: [String: Any] = [
-            "ephemeralPublicKey": encryptedPayload.ephemeralPublicKey,
-            "ciphertext": encryptedPayload.encryptedData,
+            "ephemeralPublicKey":  hexEncode(encryptedPayload.ephemeralPublicKey),
+            "ciphertext": hexEncode(encryptedPayload.encryptedData),
         ]
 
         if let ssk = encryptedPayload.symmetricKey {
-            result["symmetricKey"] = ssk
+            result["symmetricKey"] = hexEncode(ssk)
         }
 
         resolve(result)
