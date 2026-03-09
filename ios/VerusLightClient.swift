@@ -541,8 +541,7 @@ class VerusLightClient: RCTEventEmitter {
     guard data.count == 43 else {
       throw Bech32EncodingError.invalidDataLength
     }
-    let hex = data.map { String(format: "%02x", $0) }.joined()
-    resolve(hex)
+    return data
   }
 
   private func encodeSaplingSpendingKey(_ data: [UInt8]) throws -> String {
@@ -671,7 +670,7 @@ class VerusLightClient: RCTEventEmitter {
     }
   }
 
-  @objc func decryptVerusMessage(_ ivkHex: String?, _ epkHex: String?  _ message: String, _ sskHex: String?, 
+  @objc func decryptVerusMessage(_ ivkHex: String?, _ epkHex: String?,  _ message: String, _ sskHex: String?, 
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -684,6 +683,11 @@ class VerusLightClient: RCTEventEmitter {
 
         // mainnet is always fine here, irrelevant for Verus
         let derivationTool = DerivationTool(networkType: .mainnet)
+
+        //TODO: move this outside of function for reuse across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
 
         let decryptedData = try derivationTool.decryptVerusData(
             incomingViewingKey: ivk_bytes,
