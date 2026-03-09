@@ -102,7 +102,7 @@ rejecter:(RCTPromiseRejectBlock)reject
 )
 
 RCT_EXTERN_METHOD(deriveSaplingSpendingKey:(NSString *)seed
-0:(NSString *)network
+:(NSString *)network
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
