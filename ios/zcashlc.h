@@ -84,7 +84,7 @@ typedef struct FFIEncryptedPayload {
 typedef struct FFIByteBuffer {
   uint8_t *decrypted_data_ptr;
   uint32_t decrypted_data_len;
-}
+} FFIByteBuffer;
 
 /**
  * A struct that contains a pointer to, and length information for, a heap-allocated
@@ -423,7 +423,7 @@ struct FfiAccounts *zcashlc_list_accounts(const uint8_t *db_data,
  */
 void zcashlc_free_binary_key(struct FFIBinaryKey *ptr);
 
-void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr);
+void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr));
 
 void zcashlc_free_encrypted_payload(struct FFIEncryptedPayload *payload);
 
@@ -556,7 +556,7 @@ struct FFIByteBuffer *zcashlc_decrypt_vdata(const uint8_t *ivk,
                                                   const uint8_t *data,
                                                   uint32_t data_len,
                                                   const uint8_t *ssk,
-                                                  uintptr_t ssk_len,
+                                                  uintptr_t ssk_len
 );
 
 /**
