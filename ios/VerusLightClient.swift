@@ -671,6 +671,37 @@ class VerusLightClient: RCTEventEmitter {
     }
   }
 
+  @objc func decryptVerusMessage(_ ivkHex: String?, _ epkHex: String?  _ message: String, _ sskHex: String?, 
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        
+        let ivk_bytes: [UInt8]? = try ivkHex.map { hex in try bytes(from: hex) }
+        let epk_bytes: [UInt8]? = try epkHex.map { hex in try bytes(from: hex) }
+        let data_bytes = try bytes(from: message)
+        let ssk_bytes: [UInt8]? = try sskHex.map { hex in try bytes(from: hex) }
+
+        // mainnet is always fine here, irrelevant for Verus
+        let derivationTool = DerivationTool(networkType: .mainnet)
+
+        let decryptedData = try derivationTool.decryptVerusData(
+            incomingViewingKey: ivk_bytes,
+            ephemeralPublicKey: epk_bytes,
+            dataToDecrypt: data_bytes,
+            symmetricKey: ssk_bytes
+        )
+
+        var result: [String: Any] = [
+            "ciphertext": hexEncode(decryptedData.data),
+        ]
+
+        resolve(result)
+    } catch {
+        reject("decryptVerusMessage", "Failed to decrypt data", error)
+    }
+  }
+
   @objc func deriveViewingKey(
     _ extsk: String, _ seed: String, _ network: String, resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
