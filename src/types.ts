@@ -137,20 +137,13 @@ export interface ChannelKeysRequest {
 
 export interface ChannelKeysResponse{
     address: string
-    /* extended fvk with diversifer info included, bech32 representation */
     extfvk: string
-    /** The hex-encoded Incoming Viewing Key. */
     ivk: string
-    /** The optional bech32-encoded spending key. */
     spendingKey?: string
 }
 
 export interface EncryptedPayload {
-  
-
     ephemeralPublicKey: string;
-
-    encryptedData: string;
-
+    dataToDecrypt: string;
     symmetricKey?: string;
 }

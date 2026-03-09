@@ -633,13 +633,13 @@ class VerusLightClient: RCTEventEmitter {
     }
   }
 
-  @objc func encryptVerusMessage(_ address: String, _ message: String, _ returnSsk: Bool, 
+  @objc func encryptVerusData(_ address: String, _ data: String, _ returnSsk: Bool, 
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     do {
         let address_bytes = try decodeSaplingAddress(address)
-        let data_bytes = try bytes(from: message)
+        let data_bytes = try bytes(from: data)
 
         // mainnet is always fine here, irrelevant for Verus
         let derivationTool = DerivationTool(networkType: .mainnet)
@@ -657,7 +657,7 @@ class VerusLightClient: RCTEventEmitter {
         
         var result: [String: Any] = [
             "ephemeralPublicKey":  hexEncode(encryptedPayload.ephemeralPublicKey),
-            "ciphertext": hexEncode(encryptedPayload.encryptedData),
+            "encryptedData": hexEncode(encryptedPayload.encryptedData),
         ]
 
         if let ssk = encryptedPayload.symmetricKey {
@@ -666,11 +666,11 @@ class VerusLightClient: RCTEventEmitter {
 
         resolve(result)
     } catch {
-        reject("encryptVerusMessage", "Failed to encrypt data", error)
+        reject("encryptVerusData", "Failed to encrypt data", error)
     }
   }
 
-  @objc func decryptVerusMessage(_ ivkHex: String?, _ epkHex: String?,  _ message: String, _ sskHex: String?, 
+  @objc func decryptVerusData(_ ivkHex: String?, _ epkHex: String?,  _ dataToDecrypt: String, _ sskHex: String?, 
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -678,7 +678,7 @@ class VerusLightClient: RCTEventEmitter {
         
         let ivk_bytes: [UInt8]? = try ivkHex.map { hex in try bytes(from: hex) }
         let epk_bytes: [UInt8]? = try epkHex.map { hex in try bytes(from: hex) }
-        let data_bytes = try bytes(from: message)
+        let data_bytes = try bytes(from: dataToDecrypt)
         let ssk_bytes: [UInt8]? = try sskHex.map { hex in try bytes(from: hex) }
 
         // mainnet is always fine here, irrelevant for Verus
@@ -698,7 +698,7 @@ class VerusLightClient: RCTEventEmitter {
 
         resolve(hexEncode(decryptedData.data))
     } catch {
-        reject("decryptVerusMessage", "Failed to decrypt data", error)
+        reject("decryptVerusData", "Failed to decrypt data", error)
     }
   }
 

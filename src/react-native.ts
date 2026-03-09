@@ -132,7 +132,6 @@ export const Tools = {
     dataToEncrypt: string,
     returnSsk: boolean = false
   ): Promise<EncryptedPayload> {
-    console.warn("encryptVerusData in typescript entered!");
     return VerusLightClient.encryptVerusData(address, dataToEncrypt, returnSsk);
   },
 
@@ -147,15 +146,10 @@ export const Tools = {
    async decryptVerusData(
     ivkHex: string | null,
     epkHex: string | null,
-    encryptedData: string,
+    dataToDecrypt: string,
     sskHex: string | null
   ): Promise<string> {
-    return VerusLightClient.decryptVerusData(
-      ivkHex,
-      epkHex,
-      encryptedData,
-      sskHex
-    );
+    return VerusLightClient.decryptVerusData(ivkHex, epkHex, dataToDecrypt, sskHex);
   },
 };
 

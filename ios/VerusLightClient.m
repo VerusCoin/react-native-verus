@@ -120,16 +120,16 @@ resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
 
-RCT_EXTERN_METHOD(encryptVerusMessage:(NSString *)address
-:(NSString *)message
+RCT_EXTERN_METHOD(encryptVerusData:(NSString *)address
+:(NSString *)data
 :(BOOL)returnSsk
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
 
-RCT_EXTERN_METHOD(decryptVerusMessage:(NSString * _Nullable)ivkHex
+RCT_EXTERN_METHOD(decryptVerusData:(NSString * _Nullable)ivkHex
 :(NSString * _Nullable)epkHex
-:(NSString *)ciphertextHex
+:(NSString *)dataToDecrypt
 :(NSString * _Nullable)sskHex
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject

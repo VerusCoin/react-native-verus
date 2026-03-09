@@ -988,9 +988,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     ) {
         moduleScope.launch {
             try {
-                Log.w("ReactNative", ">>>> encryptVerusData entered in Kotlin");
                 val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(dataToEncrypt), returnSsk)
-                // We must convert the result to a WritableMap for JavaScript
                 promise.resolve(payload.toWritableMap())
             } catch (e: Throwable) {
                 promise.reject("ENCRYPT_DATA_FAILED", e.message ?: "Failed to encrypt message", e)
