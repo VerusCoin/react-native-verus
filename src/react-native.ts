@@ -79,14 +79,12 @@ export const Tools = {
     const result = await VerusLightClient.isValidAddress(address, network)
     return result
   },
-  getSymmetricKey: async (
+/*  getSymmetricKey: async (
     ufvk: string,
     ephemeralPublicKeyHex: string,
     network: Network = 'VRSC'
   ): Promise<String> => {
-    console.warn("getSymmetricKey called!, ufvk(" + ufvk + "), epkHex(" + ephemeralPublicKeyHex + ")"); 
     const result = await VerusLightClient.getSymmetricKey(ufvk, ephemeralPublicKeyHex, network)
-    console.warn("getSymmetricKey result: " + result.toString())
     return result
   },
   generateSymmetricKey: async (
@@ -96,7 +94,7 @@ export const Tools = {
     const result = await VerusLightClient.generateSymmetricKey(recipient, network)
     return result
   },
-
+*/
 
   /**
    * Derives a deterministic z-address for encrypted communicatoin between two parties.
@@ -112,9 +110,6 @@ export const Tools = {
   async getVerusEncryptionAddress(
     params: ChannelKeysRequest
   ): Promise<ChannelKeysResponse> {
-    console.warn("params.mnemonicSeed =", params.mnemonicSeed);
-    console.warn("params.extsk =", params.extsk);
-
     return VerusLightClient.zGetEncryptionAddress(
       params.mnemonicSeed ?? null,
       params.extsk ?? null,
