@@ -696,11 +696,7 @@ class VerusLightClient: RCTEventEmitter {
             symmetricKey: ssk_bytes
         )
 
-        var result: [String: Any] = [
-            "ciphertext": hexEncode(decryptedData.data),
-        ]
-
-        resolve(result)
+        resolve(hexEncode(decryptedData.data))
     } catch {
         reject("decryptVerusMessage", "Failed to decrypt data", error)
     }

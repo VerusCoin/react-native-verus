@@ -427,7 +427,7 @@ void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr)
 
 void zcashlc_free_encrypted_payload(struct FFIEncryptedPayload *payload);
 
-void zcashlc_free_byte_buffer(struct FFIByteBuffer *data);
+void zcashlc_free_byte_buffer_ptr(struct FFIByteBuffer *data);
 
 /**
  * Adds the next available account-level spend authority, given the current set of [ZIP 316]
