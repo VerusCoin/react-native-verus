@@ -980,43 +980,42 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun encryptVerusMessage(
+    fun encryptVerusData(
         address: String,
-        message: String,
+        dataToEncrypt: String,
         returnSsk: Boolean,
         promise: Promise
     ) {
         moduleScope.launch {
             try {
-                Log.w("ReactNative", ">>>> encryptVerusMessage entered in Kotlin");
-                val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(message), returnSsk)
+                Log.w("ReactNative", ">>>> encryptVerusData entered in Kotlin");
+                val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(dataToEncrypt), returnSsk)
                 // We must convert the result to a WritableMap for JavaScript
                 promise.resolve(payload.toWritableMap())
             } catch (e: Throwable) {
-                promise.reject("ENCRYPT_MESSAGE_FAILED", e.message ?: "Failed to encrypt message", e)
+                promise.reject("ENCRYPT_DATA_FAILED", e.message ?: "Failed to encrypt message", e)
             }
         }
     }
 
     @ReactMethod
-    fun decryptVerusMessage(
-        fvkHex: String?,
+    fun decryptVerusData(
+        ivkHex: String?,
         epkHex: String?,
-        ciphertextHex: String,
+        dataToDecrypt: String,
         sskHex: String?,
         promise: Promise
     ) {
         moduleScope.launch {
-            val fvkBytes = fvkHex?.let{ Hex.decode(fvkHex) }
+            val ivkBytes = ivkHex?.let{ Hex.decode(ivkHex) }
             val epkBytes = epkHex?.let{ Hex.decode(epkHex) }
             val sskBytes = sskHex?.let{ Hex.decode(sskHex) }
 
-
             try {
-                val decryptedMessage = DerivationTool.getInstance().decryptVerusData(fvkBytes, epkBytes, Hex.decode(ciphertextHex), sskBytes)
+                val decryptedData = DerivationTool.getInstance().decryptVerusData(ivkBytes, epkBytes, Hex.decode(dataToDecrypt), sskBytes)
                 promise.resolve(Hex.encode(decryptedMessage.copyDecryptedDataBytes()))
             } catch (e: Throwable) {
-                promise.reject("DECRYPT_MESSAGE_FAILED", e.message ?: "Failed to decrypt message", e)
+                promise.reject("DECRYPT_DATA_FAILED", e.message ?: "Failed to decrypt data", e)
             }
         }
     }
@@ -1158,7 +1157,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     private fun ChannelKeys.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
         map.putString("address", this.copyAddress())
-        map.putString("fvk", encodeSaplingExtendedFvk(this.copyExtendedFullViewingKeyBytes()))
+        map.putString("extfvk", encodeSaplingExtendedFvk(this.copyExtendedFullViewingKeyBytes()))
         map.putString("ivk", Hex.encode(this.copyInternalViewingKeyBytes()))
         this.copySpendingKeyBytes()?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
         return map
@@ -1170,7 +1169,7 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     private fun EncryptedPayload.toWritableMap(): WritableMap {
         val map = Arguments.createMap()
         map.putString("ephemeralPublicKey", Hex.encode(this.copyEphemeralPublicKeyBytes()))
-        map.putString("ciphertext", Hex.encode(this.copyEncryptedDataBytes()))
+        map.putString("encryptedData", Hex.encode(this.copyEncryptedDataBytes()))
         this.copySymmetricKeyBytes()?.let { map.putString("symmetricKey", Hex.encode(it)) }
         return map
     }
