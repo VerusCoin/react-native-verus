@@ -107,13 +107,40 @@ resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
 
+//TODO: we should probably explicitly declare our other nullable arguments this way
+// still learning swift, but this seems much more proper, and SDK seems to use Swift that is outdated everywhere
+RCT_EXTERN_METHOD(zGetEncryptionAddress:(NSString * _Nullable)mnemonicSeed
+:(NSString * _Nullable)extsk
+:(NSString * _Nullable)fromId
+:(NSString * _Nullable)toId
+:(NSNumber * _Nonnull)hdIndex
+:(NSNumber * _Nonnull)encryptionIndex
+:(BOOL)returnSecret
+resolver:(RCTPromiseResolveBlock)resolve
+rejecter:(RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(encryptVerusData:(NSString *)address
+:(NSString *)data
+:(BOOL)returnSsk
+resolver:(RCTPromiseResolveBlock)resolve
+rejecter:(RCTPromiseRejectBlock)reject
+)
+
+RCT_EXTERN_METHOD(decryptVerusData:(NSString * _Nullable)ivkHex
+:(NSString * _Nullable)epkHex
+:(NSString *)dataToDecrypt
+:(NSString * _Nullable)sskHex
+resolver:(RCTPromiseResolveBlock)resolve
+rejecter:(RCTPromiseRejectBlock)reject
+)
+
 RCT_EXTERN_METHOD(deriveShieldedAddress:(NSString *)extsk
 :(NSString *)seed
 :(NSString *)network
 resolver:(RCTPromiseResolveBlock)resolve
 rejecter:(RCTPromiseRejectBlock)reject
 )
-
 
 RCT_EXTERN_METHOD(getUnifiedAddress:(NSString *)alias
 resolver:(RCTPromiseResolveBlock)resolve

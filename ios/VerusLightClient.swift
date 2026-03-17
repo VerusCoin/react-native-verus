@@ -546,6 +546,173 @@ class VerusLightClient: RCTEventEmitter {
     return viewingKey
   }
 
+  private func decodeSaplingAddress(_ saplingAddress: String) throws -> [UInt8] {
+    let (hrp, data) = try Bech32.decode(saplingAddress)
+    //TODO: check hrp == 'zs'
+    guard data.count == 43 else {
+      throw Bech32EncodingError.invalidDataLength
+    }
+    return data
+  }
+
+  private func encodeSaplingSpendingKey(_ data: [UInt8]) throws -> String {
+    let hrp = "secret-extended-key-main"
+    guard data.count == 169 else {
+      throw Bech32EncodingError.invalidDataLength
+    }
+    return try Bech32.encode(hrp: hrp, data: data)
+  }
+
+  private func encodeSaplingExtendedFvk(_ data: [UInt8]) throws -> String {
+    let hrp = "zxviews"
+    guard data.count == 169 else {
+        throw Bech32EncodingError.invalidDataLength
+    }
+    return try Bech32.encode(hrp: hrp, data: data)
+  }
+
+  private func zGetEncryptionAddress(_ mnemonicSeed: String?, _ extsk: String?, _ fromId: String?,
+    _ toId: String?,  _ hdIndex: Int, _ encryptionIndex: Int, _ returnSecret: Bool ) throws -> ChannelKeys
+  {
+    let seedBytes: [UInt8]? =
+        try mnemonicSeed.map { seed in
+            try Mnemonic.deterministicSeedBytes(from: seed)
+        }
+    let extskBytes: [UInt8]? = try extsk.map { hex in try bytes(from: hex) }
+
+    let fromIdBytes: [UInt8]? = try fromId.map { hex in try bytes(from: hex) }
+    let toIdBytes: [UInt8]? = try toId.map { hex in try bytes(from: hex) }
+
+    // mainnet is always fine here, irrelevant for Verus
+    let derivationTool = DerivationTool(networkType: .mainnet)
+
+    let channelKeys = try derivationTool.zGetEncryptionAddress(
+        seed: seedBytes,
+        extsk: extskBytes,
+        hdIndex: hdIndex,
+        encryptionIndex: encryptionIndex,
+        fromId: fromIdBytes,
+        toId: toIdBytes,
+        returnSecret: returnSecret
+    )
+    return channelKeys
+  }
+
+  @objc func zGetEncryptionAddress(_ mnemonicSeed: String?, _ extsk: String?, _ fromId: String?, _ toId: String?,
+    _ hdIndex: NSNumber, _ encryptionIndex: NSNumber, _ returnSecret: Bool, resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        // TS 'number' to Swift Int needs narrowing check too
+        guard let hdIndexInt = Int(exactly: hdIndex) else {
+            throw ZcashError.derivationToolEncryptionAddressInvalidIndex
+          //TODO: figure out how to deal with errors here
+        }
+        guard let encryptionIndexInt = Int(exactly: encryptionIndex) else {
+            throw ZcashError.derivationToolEncryptionAddressInvalidIndex
+        }
+
+        let channelKeys = try zGetEncryptionAddress(
+            mnemonicSeed,
+            extsk,
+            fromId,
+            toId,
+            hdIndexInt,
+            encryptionIndexInt,
+            returnSecret
+        )
+
+        //TODO: move this outside of function for reuse across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
+
+        //TODO: fvk and spendingKey should be Bech32 encoded prior to return here
+        var result: [String: Any] = [
+            "address": channelKeys.address,
+            "fvk": try encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
+            "ivk": hexEncode(channelKeys.incomingViewingKey)
+        ]
+
+        if let sk = channelKeys.spendingKey {
+            result["spendingKey"] = try encodeSaplingSpendingKey(sk)
+        }
+
+        resolve(result)
+    } catch {
+        reject("ZGetEncryptionAddressError", "Failed to derive encryption address", error)
+    }
+  }
+
+  @objc func encryptVerusData(_ address: String, _ data: String, _ returnSsk: Bool, 
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        let address_bytes = try decodeSaplingAddress(address)
+        let data_bytes = try bytes(from: data)
+
+        // mainnet is always fine here, irrelevant for Verus
+        let derivationTool = DerivationTool(networkType: .mainnet)
+
+        let encryptedPayload = try derivationTool.encryptVerusData(
+            address: address_bytes,
+            dataToEncrypt: data_bytes,
+            returnSsk: returnSsk
+        )
+
+        //TODO: move this outside of function for reuse across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
+        
+        var result: [String: Any] = [
+            "ephemeralPublicKey":  hexEncode(encryptedPayload.ephemeralPublicKey),
+            "encryptedData": hexEncode(encryptedPayload.encryptedData),
+        ]
+
+        if let ssk = encryptedPayload.symmetricKey {
+            result["symmetricKey"] = hexEncode(ssk)
+        }
+
+        resolve(result)
+    } catch {
+        reject("encryptVerusData", "Failed to encrypt data", error)
+    }
+  }
+
+  @objc func decryptVerusData(_ ivkHex: String?, _ epkHex: String?,  _ dataToDecrypt: String, _ sskHex: String?, 
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+        
+        let ivk_bytes: [UInt8]? = try ivkHex.map { hex in try bytes(from: hex) }
+        let epk_bytes: [UInt8]? = try epkHex.map { hex in try bytes(from: hex) }
+        let data_bytes = try bytes(from: dataToDecrypt)
+        let ssk_bytes: [UInt8]? = try sskHex.map { hex in try bytes(from: hex) }
+
+        // mainnet is always fine here, irrelevant for Verus
+        let derivationTool = DerivationTool(networkType: .mainnet)
+
+        //TODO: move this outside of function for reuse across file
+        func hexEncode(_ bytes: [UInt8]) -> String {
+            bytes.map { String(format: "%02x", $0) }.joined()
+        }
+
+        let decryptedData = try derivationTool.decryptVerusData(
+            incomingViewingKey: ivk_bytes,
+            ephemeralPublicKey: epk_bytes,
+            dataToDecrypt: data_bytes,
+            symmetricKey: ssk_bytes
+        )
+
+        resolve(hexEncode(decryptedData.data))
+    } catch {
+        reject("decryptVerusData", "Failed to decrypt data", error)
+    }
+  }
+
   @objc func deriveViewingKey(
     _ extsk: String, _ seed: String, _ network: String, resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock

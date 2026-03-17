@@ -20,6 +20,9 @@ import {
   SynchronizerCallbacks,
   Transaction,
   UnifiedViewingKey,
+  ChannelKeysRequest,
+  ChannelKeysResponse,
+  EncryptedPayload
 } from './types'
 export * from './types'
 
@@ -75,8 +78,80 @@ export const Tools = {
   ): Promise<boolean> => {
     const result = await VerusLightClient.isValidAddress(address, network)
     return result
-  }
-}
+  },
+/*  getSymmetricKey: async (
+    ufvk: string,
+    ephemeralPublicKeyHex: string,
+    network: Network = 'VRSC'
+  ): Promise<String> => {
+    const result = await VerusLightClient.getSymmetricKey(ufvk, ephemeralPublicKeyHex, network)
+    return result
+  },
+  generateSymmetricKey: async (
+    recipient: string,
+    network: Network = 'VRSC'
+  ): Promise<String> => {
+    const result = await VerusLightClient.generateSymmetricKey(recipient, network)
+    return result
+  },
+*/
+
+  /**
+   * Derives a deterministic z-address for encrypted communicatoin between two parties.
+   * @param {string | null} seed The user's wallet seed as a hex string. Can be null if spendingKey is provided.
+   * @param {string | null} spendingKey The user's extended spending key. Can be null if seed is provided.
+   * @param {string | null} fromId A unique identifier for the sender (e.g., a hex-encoded VerusID). Can be null.
+   * @param {string | null} toId A unique identifier for the recipient (e.g., a hex-encoded VerusID). Can be null.
+   * @param {number} hdIndex The HD account index to use if deriving from a seed. Defaults to 0.
+   * @param {number} encryptionIndex The index for the final encryption key derivation. Defaults to 0.
+   * @param {boolean} returnSecret If true, the derived extended spending key will be included in the result. Defaults to false.
+   * @returns {Promise<{address: string, fullViewingKey: string, spendingKey?: string}>} A promise that resolves with a ChannelKeys object.
+   */
+  async getVerusEncryptionAddress(
+    params: ChannelKeysRequest
+  ): Promise<ChannelKeysResponse> {
+    return VerusLightClient.zGetEncryptionAddress(
+      params.mnemonicSeed ?? null,
+      params.extsk ?? null,
+      params.fromId ?? null,
+      params.toId ?? null,
+      params.hdIndex ?? -1,
+      params.encryptionIndex ?? 0,
+      params.returnSecret ?? false,
+    );
+  },
+  /**
+   * Encrypts data for a given z-address.
+   * @param {string} address The recipient's z-address.
+   * @param {string} dataToEncrypt The plaintext message to encrypt.
+   * @param {boolean} returnSsk If true, the symmetric key used for encryption will be returned. Defaults to false.
+   * @returns {Promise<{ephemeralPublicKey: string, ciphertext: string, symmetricKey?: string}>} A promise that resolves with an EncryptedPayload object.
+   */
+  async encryptVerusData(
+    address: string,
+    dataToEncrypt: string,
+    returnSsk: boolean = false
+  ): Promise<EncryptedPayload> {
+    return VerusLightClient.encryptVerusData(address, dataToEncrypt, returnSsk);
+  },
+
+  /**
+   * Decrypts data with ivk + epk or ssk.
+   * @param {string | null} fvkHex The recipient's hex-encoded full viewing key. Not needed if sskHex is provided.
+   * @param {string | null} epkHex The sender's hex-encoded ephemeral public key. Not needed if sskHex is provided.
+   * @param {string} ciphertextHex The hex-encoded encrypted message.
+   * @param {string | null} sskHex The hex-encoded symmetric session key. If provided, fvkHex and epkHex are ignored.
+   * @returns {Promise<string>} A promise that resolves with the decrypted plaintext message.
+   */
+   async decryptVerusData(
+    ivkHex: string | null,
+    epkHex: string | null,
+    dataToDecrypt: string,
+    sskHex: string | null
+  ): Promise<string> {
+    return VerusLightClient.decryptVerusData(ivkHex, epkHex, dataToDecrypt, sskHex);
+  },
+};
 
 export class Synchronizer {
   eventEmitter: NativeEventEmitter

@@ -1,4 +1,4 @@
-export type Network = 'mainnet' | 'testnet' | 'VRSC'
+export type Network = 'mainnet' | 'VRSCTEST' | 'VRSC'
 
 export interface InitializerConfig {
   networkName: string
@@ -123,4 +123,27 @@ export interface PrivateBalanceResponse {
 
 export interface PrivateTransactionsResponse {
   transactions: Transaction[]
+}
+
+export interface ChannelKeysRequest {
+  mnemonicSeed?: string
+  extsk?: string
+  fromId?: string
+  toId?: string
+  hdIndex?: number
+  encryptionIndex?: number
+  returnSecret?: boolean
+}
+
+export interface ChannelKeysResponse{
+    address: string
+    extfvk: string
+    ivk: string
+    spendingKey?: string
+}
+
+export interface EncryptedPayload {
+    ephemeralPublicKey: string;
+    dataToDecrypt: string;
+    symmetricKey?: string;
 }

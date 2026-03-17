@@ -60,6 +60,32 @@ typedef struct FFIEncodedKey {
   char *encoding;
 } FFIEncodedKey;
 
+typedef struct FFIChannelKeys {
+  char *address;
+  uint8_t *full_viewing_key_ptr;
+  uintptr_t full_viewing_key_len;
+  uint8_t *incoming_viewing_key_ptr;
+  uintptr_t incoming_viewing_key_len;
+  uint8_t *spending_key_ptr;  // optional; may be null
+  uintptr_t spending_key_len; // 0 when spending key null
+} FFIChannelKeys;
+
+typedef struct FFIEncryptedPayload {
+  uint8_t *ephemeral_public_key_ptr;
+  uintptr_t ephemeral_public_key_len;
+
+  uint8_t *encrypted_data_ptr;
+  uint32_t encrypted_data_len;
+
+  uint8_t *symmetric_key_ptr;   // optional; may be null
+  uintptr_t symmetric_key_len;  // 0 when symmetric key null
+} FFIEncryptedPayload;
+
+typedef struct FFIByteBuffer {
+  uint8_t *decrypted_data_ptr;
+  uint32_t decrypted_data_len;
+} FFIByteBuffer;
+
 /**
  * A struct that contains a pointer to, and length information for, a heap-allocated
  * slice of [`FFIEncodedKey`] values.
@@ -397,6 +423,12 @@ struct FfiAccounts *zcashlc_list_accounts(const uint8_t *db_data,
  */
 void zcashlc_free_binary_key(struct FFIBinaryKey *ptr);
 
+void zcashlc_free_channel_keys(struct FFIChannelKeys(struct FFIChannelKeys *ptr));
+
+void zcashlc_free_encrypted_payload(struct FFIEncryptedPayload *payload);
+
+void zcashlc_free_byte_buffer_ptr(struct FFIByteBuffer *data);
+
 /**
  * Adds the next available account-level spend authority, given the current set of [ZIP 316]
  * account identifiers known, to the wallet database.
@@ -496,6 +528,36 @@ struct FFIBinaryKey *zcashlc_derive_spending_key(const uint8_t *transparent_key,
                                                  uintptr_t seed_len,
                                                  int32_t account,
                                                  uint32_t network_id);
+
+struct FFIChannelKeys *zcashlc_z_get_encryption_address(const uint8_t *seed,
+                                                        uintptr_t seed_len,
+                                                        const uint8_t *extsk,
+                                                        uintptr_t extsk_len,
+                                                        int32_t hd_index,
+                                                        int32_t encryption_index,
+                                                        const uint8_t *from_id,
+                                                        uintptr_t from_id_len,
+                                                        const uint8_t *to_id,
+                                                        uintptr_t to_id_len,
+                                                        bool return_secret
+);
+
+struct FFIEncryptedPayload *zcashlc_encrypt_vdata(const uint8_t *address,
+                                                  uintptr_t address_len,
+                                                  const uint8_t *data,
+                                                  uint32_t data_len,
+                                                  bool return_ssk
+);
+
+struct FFIByteBuffer *zcashlc_decrypt_vdata(const uint8_t *ivk,
+                                                  uintptr_t ivk_len,
+                                                  const uint8_t *epk,
+                                                  uintptr_t epk_len,
+                                                  const uint8_t *data,
+                                                  uint32_t data_len,
+                                                  const uint8_t *ssk,
+                                                  uintptr_t ssk_len
+);
 
 /**
  * Obtains the unified full viewing key for the given binary-encoded unified spending key

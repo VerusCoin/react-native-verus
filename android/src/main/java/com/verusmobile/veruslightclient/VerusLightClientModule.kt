@@ -32,6 +32,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlin.math.roundToInt
 import kotlin.math.min
 
+
 import android.util.Log
 import java.lang.Error
 
@@ -888,6 +889,142 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     // AddressTool
     //
 
+    /*@OptIn(kotlin.ExperimentalStdlibApi::class)
+    @ReactMethod
+    fun getSymmetricKey(
+        ufvk: String,
+        ephemeralPublicKeyHex: String,
+        network: String = "VRSC",
+        promise: Promise,
+    ) {
+        Log.w("ReactNative", "VerusLightClient.getSymmetricKey() called!! ufvk($ufvk), epk($ephemeralPublicKeyHex)")
+        moduleScope.launch {
+            promise.wrap {
+                val epkBytes = ephemeralPublicKeyHex.hexToByteArray()
+                Log.w("ReactNative", "getSymmetricKey: epkBytes($epkBytes)")
+                val symmetricKey =
+                    DerivationTool.getInstance().getSymmetricKey(
+                        ufvk, 
+                        epkBytes,
+                        networks.getOrDefault(network, ZcashNetwork.Mainnet),
+                    )
+                Log.w("ReactNative", "getSymmetricKey: symmetricKey($symmetricKey)")
+                return@wrap symmetricKey
+            }
+        }
+    }
+
+
+    //
+    // AddressTool
+    //
+
+    @ReactMethod
+    fun generateSymmetricKey(
+        recipient: String,
+        network: String = "VRSC",
+        promise: Promise,
+    ) {
+        Log.w("ReactNative", "VerusLightClient.generateSymmetricKey() called! recipient($recipient)");
+        moduleScope.launch {
+            promise.wrap {
+                val symmetricKey =
+                    DerivationTool.getInstance().generateSymmetricKey(
+                        recipient,
+                        networks.getOrDefault(network, ZcashNetwork.Mainnet),
+                    )
+                Log.w("ReactNative", "generateSymmetricKey: symmetricKey($symmetricKey)")
+                return@wrap symmetricKey
+            }
+        }
+    }*/
+
+    //
+    // AddressTool
+    //
+
+    @ReactMethod
+    fun zGetEncryptionAddress(
+        seed: String?,         // The seed from JS will be a hex string
+        spendingKey: String?,  // also hex only supported for now, we decode Bech32 prior to calling
+        fromId: String?,
+        toId: String?,
+        hdIndex: Int,
+        encryptionIndex: Int,
+        returnSecret: Boolean,
+        promise: Promise
+    ) {
+        Log.w("ReactNative", "seed argument=$seed, spendingKey argument=$spendingKey")
+        moduleScope.launch {
+            try {
+                // We handle all secret values' byte conversion using SeedPhrase.new()
+                val seedBytes = seed?.let{ SeedPhrase.new(seed).toByteArray() }
+                val spendingKeyBytes = spendingKey?.let{ SeedPhrase.new(spendingKey).toByteArray() }
+
+                // use Hex.decode for non-secret values
+                val fromIdBytes = fromId?.let{ Hex.decode(it) }
+                val toIdBytes = toId?.let{ Hex.decode(it) }
+
+                val channelKeys = DerivationTool.getInstance().getVerusEncryptionAddress(
+                    seed = seedBytes,
+                    spendingKey = spendingKeyBytes,
+                    fromId = fromIdBytes,
+                    toId = toIdBytes,
+                    hdIndex = hdIndex,
+                    encryptionIndex = encryptionIndex,
+                    returnSecret = returnSecret
+                )
+                // We must convert the result to a WritableMap for JavaScript
+                promise.resolve(channelKeys.toWritableMap())
+            } catch (e: Throwable) {
+                promise.reject("GET_ENCRYPTION_ADDRESS_FAILED", e.message ?: "Failed to get encryption address", e)
+            }
+        }
+    }
+
+    @ReactMethod
+    fun encryptVerusData(
+        address: String,
+        dataToEncrypt: String,
+        returnSsk: Boolean,
+        promise: Promise
+    ) {
+        moduleScope.launch {
+            try {
+                val payload = DerivationTool.getInstance().encryptVerusData(decodeSaplingAddress(address), Hex.decode(dataToEncrypt), returnSsk)
+                promise.resolve(payload.toWritableMap())
+            } catch (e: Throwable) {
+                promise.reject("ENCRYPT_DATA_FAILED", e.message ?: "Failed to encrypt message", e)
+            }
+        }
+    }
+
+    @ReactMethod
+    fun decryptVerusData(
+        ivkHex: String?,
+        epkHex: String?,
+        dataToDecrypt: String,
+        sskHex: String?,
+        promise: Promise
+    ) {
+        moduleScope.launch {
+            val ivkBytes = ivkHex?.let{ Hex.decode(ivkHex) }
+            val epkBytes = epkHex?.let{ Hex.decode(epkHex) }
+            val sskBytes = sskHex?.let{ Hex.decode(sskHex) }
+
+            try {
+                val decryptedData = DerivationTool.getInstance().decryptVerusData(ivkBytes, epkBytes, Hex.decode(dataToDecrypt), sskBytes)
+                promise.resolve(Hex.encode(decryptedData.copyDecryptedDataBytes()))
+            } catch (e: Throwable) {
+                promise.reject("DECRYPT_DATA_FAILED", e.message ?: "Failed to decrypt data", e)
+            }
+        }
+    }
+
+    //
+    // AddressTool
+    //
+
     @ReactMethod
     fun isValidAddress(
         address: String,
@@ -966,5 +1103,89 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
         }
 
        return bytes
+    }
+
+    private fun encodeSaplingSpendingKey(data: ByteArray): String {
+        val hrp = "secret-extended-key-main"
+
+        require(data.size == 169) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+       val spendingKey = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+       return spendingKey
+    }
+
+    private fun encodeSaplingExtendedFvk(data: ByteArray): String {
+        val hrp = "zxviews"
+
+        require(data.size == 169) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+       val dfvk = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+       return dfvk
+    }
+
+    private fun decodeSaplingAddress(bech32Address: String): ByteArray {
+        val (hrp, data, encoding) = Bech32.decode(bech32Address)
+        require(hrp == "zs"/* || hrp == "secret-extended-key-test"*/) {
+            throw Exception("Invalid HRP: $hrp")
+        }
+        val bytes = Bech32.five2eight(data, offset = 0)
+        require(bytes.size == 43) {
+            throw Exception("Unexpected decoded key length: ${bytes.size} bytes")
+        }
+        return bytes
+    }
+
+    private fun encodeSaplingAddress(data: ByteArray): String {
+        val hrp = "zs"
+
+        require(data.size == 43) {
+            throw Exception("Unexpected key byte length: ${data.size} bytes, expected 169")
+        }
+
+        val address = Bech32.encodeBytes(hrp, data, Bech32.Encoding.Bech32)
+        return address
+    }
+
+
+
+    /**
+    * Converts a ChannelKeys data class into a WritableMap for React Native.
+    */
+    private fun ChannelKeys.toWritableMap(): WritableMap {
+        val map = Arguments.createMap()
+        map.putString("address", this.copyAddress())
+        map.putString("extfvk", encodeSaplingExtendedFvk(this.copyExtendedFullViewingKeyBytes()))
+        map.putString("ivk", Hex.encode(this.copyInternalViewingKeyBytes()))
+        this.copySpendingKeyBytes()?.let { map.putString("spendingKey", encodeSaplingSpendingKey(it)) }
+        return map
+    }
+
+    /**
+    * Converts an EncryptedPayload data class into a WritableMap for React Native.
+    */
+    private fun EncryptedPayload.toWritableMap(): WritableMap {
+        val map = Arguments.createMap()
+        map.putString("ephemeralPublicKey", Hex.encode(this.copyEphemeralPublicKeyBytes()))
+        map.putString("encryptedData", Hex.encode(this.copyEncryptedDataBytes()))
+        this.copySymmetricKeyBytes()?.let { map.putString("symmetricKey", Hex.encode(it)) }
+        return map
+    }
+
+    private object Hex {
+        fun decode(hex: String): ByteArray {
+            check(hex.length % 2 == 0) { "Must have an even length" }
+            return hex.chunked(2)
+                .map { it.toInt(16).toByte() }
+                .toByteArray()
+        }
+        fun encode(bytes: ByteArray): String {
+            return bytes.joinToString(separator = "") { byte ->
+                "%02x".format(byte)
+            }
+        }
     }
 }
