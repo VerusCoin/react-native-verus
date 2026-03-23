@@ -630,7 +630,7 @@ class VerusLightClient: RCTEventEmitter {
         //TODO: fvk and spendingKey should be Bech32 encoded prior to return here
         var result: [String: Any] = [
             "address": channelKeys.address,
-            "fvk": try encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
+            "extfvk": try encodeSaplingExtendedFvk(channelKeys.fullViewingKey),
             "ivk": hexEncode(channelKeys.incomingViewingKey)
         ]
 
