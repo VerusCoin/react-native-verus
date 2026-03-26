@@ -26,13 +26,13 @@ function downloadSources(): void {
     'ZcashLightClientKit',
     'https://github.com/VerusCoin/verus-swift-wallet-sdk.git',
     // 2.0.3:
-    'cff08420094044f2fc7a04bb98b2b7b2d7b2d9f0'
+    '6dfb1392f8bfdb19b52e273adb13f74ae483370c'
   )
   getRepo(
     'zcash-light-client-ffi',
     'https://github.com/VerusCoin/verus-lightclient-ffi.git',
     // 0.4.0:
-    '69bce9b3d7409867e9c51bf505fd316cc4991516'
+    '860e4fe7827fa12ea7c2b42766df88e8747bf0ae'
   )
 }
 
@@ -44,8 +44,8 @@ async function rebuildXcframework(): Promise<void> {
 
   const vendorRoot = join(__dirname, "..", "tmp", "zcash-light-client-ffi");
 
-  quietExec([
-    "bash",
+  loudExec(tmp,
+    ["bash",
     "-lc",
     `
       set -euo pipefail
@@ -76,8 +76,9 @@ async function rebuildXcframework(): Promise<void> {
     )
   );
 
-  quietExec([
-    "xcodebuild",
+  loudExec(
+    tmp,
+    ["xcodebuild",
     "-create-xcframework",
     "-library",
     join(__dirname, "../tmp/lib/ios-simulator/libzcashlc.a"),
