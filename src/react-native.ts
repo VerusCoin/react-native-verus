@@ -79,22 +79,6 @@ export const Tools = {
     const result = await VerusLightClient.isValidAddress(address, network)
     return result
   },
-/*  getSymmetricKey: async (
-    ufvk: string,
-    ephemeralPublicKeyHex: string,
-    network: Network = 'VRSC'
-  ): Promise<String> => {
-    const result = await VerusLightClient.getSymmetricKey(ufvk, ephemeralPublicKeyHex, network)
-    return result
-  },
-  generateSymmetricKey: async (
-    recipient: string,
-    network: Network = 'VRSC'
-  ): Promise<String> => {
-    const result = await VerusLightClient.generateSymmetricKey(recipient, network)
-    return result
-  },
-*/
 
   /**
    * Derives a deterministic z-address for encrypted communicatoin between two parties.
