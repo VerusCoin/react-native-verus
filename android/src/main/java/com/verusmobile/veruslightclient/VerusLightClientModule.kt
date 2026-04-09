@@ -889,55 +889,6 @@ class VerusLightClient(private val reactContext: ReactApplicationContext) :
     // AddressTool
     //
 
-    /*@OptIn(kotlin.ExperimentalStdlibApi::class)
-    @ReactMethod
-    fun getSymmetricKey(
-        ufvk: String,
-        ephemeralPublicKeyHex: String,
-        network: String = "VRSC",
-        promise: Promise,
-    ) {
-        moduleScope.launch {
-            promise.wrap {
-                val epkBytes = ephemeralPublicKeyHex.hexToByteArray()
-                val symmetricKey =
-                    DerivationTool.getInstance().getSymmetricKey(
-                        ufvk, 
-                        epkBytes,
-                        networks.getOrDefault(network, ZcashNetwork.Mainnet),
-                    )
-                return@wrap symmetricKey
-            }
-        }
-    }
-
-
-    //
-    // AddressTool
-    //
-
-    @ReactMethod
-    fun generateSymmetricKey(
-        recipient: String,
-        network: String = "VRSC",
-        promise: Promise,
-    ) {
-        moduleScope.launch {
-            promise.wrap {
-                val symmetricKey =
-                    DerivationTool.getInstance().generateSymmetricKey(
-                        recipient,
-                        networks.getOrDefault(network, ZcashNetwork.Mainnet),
-                    )
-                return@wrap symmetricKey
-            }
-        }
-    }*/
-
-    //
-    // AddressTool
-    //
-
     @ReactMethod
     fun zGetEncryptionAddress(
         seed: String?,         // The seed from JS will be a hex string
