@@ -109,7 +109,7 @@ export const Tools = {
    * @param {string} address The recipient's z-address.
    * @param {string} dataToEncrypt The plaintext message to encrypt.
    * @param {boolean} returnSsk If true, the symmetric key used for encryption will be returned. Defaults to false.
-   * @returns {Promise<{ephemeralPublicKey: string, ciphertext: string, symmetricKey?: string}>} A promise that resolves with an EncryptedPayload object.
+   * @returns {Promise<{ephemeralPublicKey: string, encryptedData: string, symmetricKey?: string}>} A promise that resolves with an EncryptedPayload object.
    */
   async encryptVerusData(
     address: string,
@@ -121,9 +121,9 @@ export const Tools = {
 
   /**
    * Decrypts data with ivk + epk or ssk.
-   * @param {string | null} fvkHex The recipient's hex-encoded full viewing key. Not needed if sskHex is provided.
+   * @param {string | null} ivkHex The recipient's hex-encoded sapling incoming viewing key. Not needed if sskHex is provided.
    * @param {string | null} epkHex The sender's hex-encoded ephemeral public key. Not needed if sskHex is provided.
-   * @param {string} ciphertextHex The hex-encoded encrypted message.
+   * @param {string} dataToDecrypt The hex-encoded encrypted message.
    * @param {string | null} sskHex The hex-encoded symmetric session key. If provided, fvkHex and epkHex are ignored.
    * @returns {Promise<string>} A promise that resolves with the decrypted plaintext message.
    */
